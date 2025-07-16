@@ -21,6 +21,17 @@ def require_auth(func):
     def wrapper(*args, **kwargs):
         load_dotenv()
         admin_id = int(os.getenv("ADMIN_ID"))
+        if admin_id is None or admin_id.strip() == "":
+            raise ValueError(
+                "Переменная окружения 'ADMIN_ID' не задана. Добавьте её в .env файл."
+            )
+
+        try:
+            admin_id = int(admin_id)  # Проверяем, что она преобразуется в число
+        except ValueError:
+            raise ValueError(
+                f"Значение 'ADMIN_ID' должно быть числовым. Текущее значение: {admin_id_str}"
+            )
         command = args[1]
         user_id = int(args[3])
         if user_id == admin_id:
