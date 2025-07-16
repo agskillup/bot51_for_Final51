@@ -53,20 +53,25 @@ class TelegramBot:
         url = self.url + "getUpdates?timeout=10"
         try:
             response = requests.get(url)
-            # Проверяем статус ответа
+            print(f"API Response: {response.json()}")
             if response.status_code != 200:
                 print(f"Error: Telegram API returned status code {response.status_code}")
                 return None
 
-            # Проверка на правильность формата JSON
             data = response.json()
+
+            # Проверяем наличие ключа 'result'
             if "result" not in data:
                 print("Error: 'result' key not found in API response")
+                print(f"API Response: {data}")
                 return None
 
             result = data["result"]
             if result:
                 return result[-1]
+            return None
+        except KeyError:
+            print("Error: Key 'result' is missing in the API response")
             return None
         except requests.exceptions.RequestException as e:
             print(f"Error while making request to Telegram API: {e}")
