@@ -3,6 +3,7 @@ from bot.base import BotCommand, CommandStrategy
 
 class SomeStrategy(CommandStrategy):
     def handle(self, text, chat_id, user_id):
+        print("Hello {}".format(text))
         return "Some command"
         # try:
         #     url = f"https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
