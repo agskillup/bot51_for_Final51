@@ -41,41 +41,13 @@ class TelegramBot:
             return command.execute(text, chat_id, user_id)
         return "Unknown command. Type /help."
 
-    # def get_last_update(self):
-    #     url = self.url + "getUpdates?timeout=10"
-    #     response = requests.get(url)
-    #     result = response.json()["result"]
-    #     if result:
-    #         return result[-1]
-    #     return None
-
     def get_last_update(self):
         url = self.url + "getUpdates?timeout=10"
-        try:
-            response = requests.get(url)
-            print(f"API Response: {response.json()}")
-            if response.status_code != 200:
-                print(f"Error: Telegram API returned status code {response.status_code}")
-                return None
-
-            data = response.json()
-
-            # Проверяем наличие ключа 'result'
-            if "result" not in data:
-                print("Error: 'result' key not found in API response")
-                print(f"API Response: {data}")
-                return None
-
-            result = data["result"]
-            if result:
-                return result[-1]
-            return None
-        except KeyError:
-            print("Error: Key 'result' is missing in the API response")
-            return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error while making request to Telegram API: {e}")
-            return None
+        response = requests.get(url)
+        result = response.json()["result"]
+        if result:
+            return result[-1]
+        return None
 
     def get_chat_id(self, update):
         return update["message"]["chat"]["id"]
