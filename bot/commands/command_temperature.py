@@ -1,5 +1,5 @@
 from bot.base import BotCommand, CommandStrategy
-from bot.helper.temperature_helper import TemperatureHelper
+from bot.helper.__temperature_helper import TemperatureHelper
 
 
 class TemperatureStrategy(CommandStrategy):

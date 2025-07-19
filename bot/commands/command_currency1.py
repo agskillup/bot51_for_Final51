@@ -1,67 +1,106 @@
 from bot.base import BotCommand, CommandStrategy
 import requests
-# from bot.helper.temperature_helper import Currency1Helper
+
+# # from bot.helper.temperature_helper import Currency1Helper
+#
+#
+# class Currency1Strategy(CommandStrategy):
+#     def handle(self, text, chat_id, user_id):
+#
+#         if text.startswith('/currency1 full'):
+#             command = '/currency1 full'
+#             text = text.replace('/currency1 full', '')
+#         else:
+#             command = '/currency1'
+#             text = text.replace('/currency1', '')
+#
+#         url = """https://api.exchangerate.host/list?access_key=b410800238c7ac37f3e4bd1f74bc4799"""
+#         response = requests.get(url)
+#         data = response.json()
+#         return data["success"]
+#
+# class Currency1Command(BotCommand):
+#
+#     def __init__(self):
+#         self.strategy = Currency1Strategy()
+#
+#     def execute(self, text, chat_id, user_id):
+#         return self.strategy.handle(text, chat_id, user_id)
+
+
+import re
+from bot.base import BotCommand, CommandStrategy
+from bot.helper.currency_helper import CurrencyHelper
 
 
 class Currency1Strategy(CommandStrategy):
+    """
+    Стратегия для команды /currency1.
+    Реализует гибкую конвертацию валют по формату:
+    /currency1 <сумма> <ИЗ_ВАЛЮТЫ> to <В_ВАЛЮТУ>
+    """
+
+    def __init__(self):
+        """
+        Инициализирует стратегию и создает экземпляр CurrencyHelper.
+        """
+        try:
+            self.currency_helper = CurrencyHelper()
+            self.initialization_error = None
+        except ValueError as e:
+            self.currency_helper = None
+            self.initialization_error = str(e)
+
     def handle(self, text, chat_id, user_id):
+        """
+        Обрабатывает команду, парсит аргументы и выполняет конвертацию.
+        """
+        if not self.currency_helper:
+            return f"Ошибка инициализации команды: {self.initialization_error}"
 
-        if text.startswith('/currency1 full'):
-            command = '/currency1 full'
-            text = text.replace('/currency1 full', '')
+        # Убираем саму команду из текста для удобства парсинга
+        clean_text = text.replace('/currency1', '').strip()
+
+        # Используем регулярное выражение для парсинга формата "10 USD to EUR"
+        # Оно ищет: (число) (3 буквы) "to" (3 буквы)
+        match = re.search(r'(\d+\.?\d*)\s+([A-Z]{3})\s+to\s+([A-Z]{3})', clean_text, re.IGNORECASE)
+
+        if not match:
+            return ("Неверный формат команды. Используйте: "
+                    "`/currency1 <сумма> <ИЗ_ВАЛЮТЫ> to <В_ВАЛЮТУ>`\n"
+                    "Например: `/currency1 10 USD to EUR`")
+
+        # Извлекаем данные из найденных групп
+        amount_str, from_currency, to_currency = match.groups()
+        amount = float(amount_str)
+        from_currency = from_currency.upper()
+        to_currency = to_currency.upper()
+
+        # Валидируем оба кода валют
+        if not self.currency_helper.is_valid_currency(from_currency):
+            return f"Неизвестный код исходной валюты: {from_currency}"
+        if not self.currency_helper.is_valid_currency(to_currency):
+            return f"Неизвестный код целевой валюты: {to_currency}"
+
+        # Выполняем конвертацию через хелпер
+        result_data = self.currency_helper.convert(from_currency, to_currency, amount)
+
+        # Обрабатываем результат
+        if result_data and result_data.get('success'):
+            converted_amount = result_data.get('result')
+            if converted_amount is not None:
+                return f"{amount:.2f} {from_currency} = {converted_amount:.2f} {to_currency}"
+            else:
+                return f"Не удалось получить результат конвертации для {from_currency} -> {to_currency}."
         else:
-            command = '/currency1'
-            text = text.replace('/currency1', '')
+            error_info = result_data.get('error', {}).get('info', 'неизвестная ошибка') if result_data else 'ошибка сети'
+            return f"Не удалось выполнить конвертацию. Причина: {error_info}"
 
-        # # Значення за замовчуванням
-        # city = 'Odesa'
-        # units = 'metric'
-
-        # if text:
-        #     parts = text.split()
-        #     if len(parts) >= 1:
-        #         city = parts[0]
-        #     if len(parts) >= 2:
-        #         units = parts[1]
-
-        url = """https://api.exchangerate.host/list?access_key=b410800238c7ac37f3e4bd1f74bc4799"""
-        response = requests.get(url)
-        data = response.json()
-        return data["success"]
-
-#        weather = Currency1Helper(units=units)
-#        weather.fetch_weather(city)
-#         if command == '/temperature full':
-#             result = f"{city}: {weather.get_weather()}"
-#         else:
-#             result = f"{city}: {weather.get_temperature()}"
-#         return result
-
-# class CurrencyService:
-#     def __init__(self, api_url: str):
-#         self.api_url = api_url
-#
-#     def get_exchange_rate(self, base: str, target: str) -> float:
-#         """
-#         Получить курс обмена валют.
-#         :param base: Базовая валюта.
-#         :param target: Валюта для перевода.
-#         :return: Курс обмена.
-#         """
-#         response = requests.get(f"{self.api_url}?base={base}&symbols={target}")
-#         if response.status_code != 200:
-#             raise Exception("Ошибка при получении курсов валют")
-#         data = response.json()
-#         return data["rates"].get(target, 0.0)
-
-# Пример использования
-# if __name__ == "__main__":
-#     service = CurrencyService("https://api.exchangerate.host/latest")
-#     token = "b410800238c7ac37f3e4bd1f74bc4799"
-#     print(service.get_exchange_rate("USD", "EUR"))
 
 class Currency1Command(BotCommand):
-    info = "Check the current temperature in a city (usage: <city> <units>)"
+    """
+    Класс команды /currency1.
+    """
 
     def __init__(self):
         self.strategy = Currency1Strategy()
