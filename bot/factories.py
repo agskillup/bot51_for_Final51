@@ -1,14 +1,16 @@
+# Factories.py является центральным "диспетчером" команд
+
 from bot.commands.help_menu import HelpMenuCommand
-from bot.commands.command_dice import DiceCommand
+# from bot.commands.command_dice import DiceCommand
 # from bot.commands.command_notebook import NotebookCommand
 from bot.commands.command_currency import CurrencyCommand
-from bot.commands.command_iam import IAmCommand
+# from bot.commands.command_iam import IAmCommand
 # from bot.commands.command_temperature import TemperatureCommand
-from bot.commands.command_some import SomeCommand
+# from bot.commands.command_some import SomeCommand
 from bot.commands.shutdown import ShutdownCommand
 # from bot.commands import COMMAND_CLASSES
 from bot.commands.command_dev import DevCommand
-from bot.commands.command_answer import AnswerCommand
+# from bot.commands.command_answer import AnswerCommand
 from bot.commands.command_currency1 import Currency1Command
 
 
@@ -22,24 +24,18 @@ class CommandFactory:
     commands_map = {
         "/help": HelpMenuCommand,
         "/shutdown": ShutdownCommand,
-        "/dice": DiceCommand,
+#        "/dice": DiceCommand,
 #        "/notebook": NotebookCommand,
         "/currency": CurrencyCommand,
-        "/iam": IAmCommand,
-        "/some": SomeCommand,
+#        "/iam": IAmCommand,
+#        "/some": SomeCommand,
         "/dev": DevCommand,
-        "/answer": AnswerCommand,
+#        "/answer": AnswerCommand,
         "/currency1": Currency1Command,
     }
 
 
     @staticmethod
-    # def create_command(command_name):
-    #     CommandClass = CommandFactory.commands_map.get(command_name)
-    #     if CommandClass:
-    #         return CommandClass()
-    #     return None
-
     def create_command(command_name):
         base_command = command_name.split(' ')[0]
         CommandClass = CommandFactory.commands_map.get(base_command)
