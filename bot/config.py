@@ -29,7 +29,7 @@ class Config:
 
     # Администратор
     ADMIN_ID = int(os.getenv("ADMIN_ID", ""))
-
+ADMIN_ID = int(os.getenv("ADMIN_ID", ""))
 # Экземпляр конфигурации
 config = Config()
 

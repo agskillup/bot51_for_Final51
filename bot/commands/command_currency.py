@@ -60,7 +60,7 @@ class CurrencyStrategy(CommandStrategy):
             self.currency_helper = None
             self.initialization_error = str(e)
 
-    def handle(self, text, chat_id, user_id):
+    def handle(self, text: str, chat_id: int, user_id: int, **kwargs):
         """
         Обрабатывает команду. Формат: /currency [КОД_ВАЛЮТЫ].
         По умолчанию используется USD.
@@ -106,7 +106,7 @@ class CurrencyCommand(BotCommand):
         """
         self.strategy = CurrencyStrategy()
 
-    def execute(self, text, chat_id, user_id):
+    def execute(self, text: str, chat_id: int, user_id: int, **kwargs):
         """
         Выполняет команду, вызывая обработчик из стратегии.
         Этот метод вызывается из фабрики команд.
