@@ -11,8 +11,17 @@ load_dotenv()
 # Администратор
 ADMIN_ID = os.getenv("ADMIN_ID", "")
 
+class ConfigError(Exception):
+    """Специальный класс исключения для ошибок конфигурации."""
+    pass
+
 class Config:
     # Основные настройки проекта
+    """
+    Класс для хранения и валидации конфигурации приложения.
+    Загружает значения из переменных окружения и падает при старте,
+    если критически важные переменные не заданы.
+    """
     BOT_TOKEN = os.getenv("TOKEN", "default_token")
     DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
