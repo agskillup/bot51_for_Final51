@@ -51,7 +51,7 @@ class Currency1Strategy(CommandStrategy):
             self.currency_helper = None
             self.initialization_error = str(e)
 
-    def handle(self, text, chat_id, user_id):
+    def handle(self, text: str, chat_id: int, user_id: int, **kwargs):
         """
         Обрабатывает команду, парсит аргументы и выполняет конвертацию.
         """
@@ -105,5 +105,5 @@ class Currency1Command(BotCommand):
     def __init__(self):
         self.strategy = Currency1Strategy()
 
-    def execute(self, text, chat_id, user_id):
+    def execute(self, text: str, chat_id: int, user_id: int, **kwargs):
         return self.strategy.handle(text, chat_id, user_id)
