@@ -1,4 +1,7 @@
 # Chain of Responsibility pattern: Ланцюг обробників
+
+from bot.logger.app_logger import logger # Импортируем настроенный логгер `app_logger.py`
+
 class Handler:
     def __init__(self):
         self._next_handler = None
@@ -19,8 +22,15 @@ class CensorshipHandler(Handler):
             return "Message blocked due to bad language!"
         return super().handle(text, chat_id, user_id)
 
-# Ще один — логування
+# # Ще один — логування
+# class LoggingHandler(Handler):
+#     def handle(self, text, chat_id, user_id):
+#         print(f"[Handler LOG] user={user_id}, chat={chat_id}, text={text}")
+#         return super().handle(text, chat_id, user_id)
+
+    # Класс `LoggingHandler` - это "клей" между цепочкой обработки запросов и системой логирования.
+    # Он должен оставаться вместе с другими обработчиками.
 class LoggingHandler(Handler):
     def handle(self, text, chat_id, user_id):
-        print(f"[Handler LOG] user={user_id}, chat={chat_id}, text={text}")
+        logger.info(f"[Request] user={user_id}, chat={chat_id}, text={text}")
         return super().handle(text, chat_id, user_id)

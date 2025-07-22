@@ -17,6 +17,11 @@ logging.basicConfig(
     datefmt=DATE_FORMAT,
 )
 
+# Устанавливаем для логгера urllib3 уровень WARNING,
+# чтобы скрыть его подробные DEBUG-сообщения
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+
 # Ротация логов с сохранением 5 файлов по 1MB
 file_handler = RotatingFileHandler(
     "bot.log", maxBytes=1_000_000, backupCount=5, encoding="utf-8"

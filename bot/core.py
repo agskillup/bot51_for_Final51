@@ -73,16 +73,20 @@ class TelegramBot:
             time.sleep(1.5)
             update = self.get_last_update()
             if update and update["update_id"] != self.last_update_id:
-                chat_id = self.get_chat_id(update)
-                user_id = self.get_user_id(update)
-                message_text = self.get_message_text(update)
-                reply = self.handle_message(message_text, chat_id, user_id)
-                if reply == "__SHUTDOWN__":
-                    self.send_message(chat_id, "Бот вимикається…")
-                    import sys
-                    sys.exit(0)
-                else:
-                    self.send_message(chat_id, reply)
+                # Проверяем, есть ли в обновлении текстовое сообщение
+                if "message" in update and "text" in update["message"]:
 
-                # self.send_message(chat_id, reply)
+                    chat_id = self.get_chat_id(update)
+                    user_id = self.get_user_id(update)
+                    message_text = self.get_message_text(update)
+                    reply = self.handle_message(message_text, chat_id, user_id)
+                    if reply == "__SHUTDOWN__":
+                        self.send_message(chat_id, "Бот вимикається…")
+                        import sys
+                        sys.exit(0)
+                    else:
+                        self.send_message(chat_id, reply)
+
+                # ВАЖНО: обновляем ID последнего обновления в любом случае,
+                # чтобы не зацикливаться на обработке нетекстовых сообщений.
                 self.last_update_id = update["update_id"]
