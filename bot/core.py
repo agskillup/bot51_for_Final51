@@ -1,26 +1,47 @@
 import os
+import sys
 import requests
 import time
+from typing import Optional, Any, Dict
 from bot.factories import CommandFactory
 from bot.decorators import log_command, require_auth
-from bot.handlers import Handler, CensorshipHandler, LoggingHandler
+from bot.handlers import CensorshipHandler, LoggingHandler
+from bot.logger.app_logger import logger
 
 
 # Singleton pattern: тільки один екземпляр TelegramBot
 class TelegramBot:
-    _instance = None
+    """
+    Основной класс бота, реализующий long-polling и обработку сообщений.
+    Реализован как Singleton для гарантии единственного экземпляра.
+    """
+#    _instance = None
+    _instance: Optional['TelegramBot'] = None
+    # Константа для команды выключения, чтобы избежать "магических строк"
+    SHUTDOWN_COMMAND_REPLY = "__SHUTDOWN__"
 
-    def __new__(cls, token):
+#    def __new__(cls, token):
+    def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, token):
-        self.token = token
-        self.url = f"https://api.telegram.org/bot{self.token}/"
-        self.handler_chain = self.build_handler_chain()
+#    def __init__(self, token):
+    def __init__(self, token: str):
+        # Предотвращаем повторную инициализацию
+        if hasattr(self, 'is_initialized'):
+            return
 
-    def build_handler_chain(self):
+        self.token: str = token
+        self.url = f"https://api.telegram.org/bot{self.token}/"
+        self.last_update_id: Optional[int] = None
+        self.handler_chain = self.build_handler_chain()
+        self.is_initialized: bool = True
+        logger.info("Экземпляр TelegramBot инициализирован.")
+
+#    def build_handler_chain(self):
+    def build_handler_chain(self) -> CensorshipHandler:
+        """Собирает и возвращает цепочку обработчиков."""
         # Chain of Responsibility: censorship -> logging -> команда
         censorship = CensorshipHandler()
         logging = LoggingHandler()
@@ -29,8 +50,14 @@ class TelegramBot:
 
     @log_command
     @require_auth
-    def handle_message(self, text, chat_id, user_id):
-        # Chain of Responsibility: запускаємо ланцюг
+    # def handle_message(self, text, chat_id, user_id):
+    #     # Chain of Responsibility: запускаємо ланцюг
+    def handle_message(self, text: str, chat_id: int, user_id: int) -> Optional[str]:
+        """
+        Обрабатывает входящее текстовое сообщение, прогоняя его через
+        цепочку обязанностей и фабрику команд.
+        """
+        # 1. Цепочка обязанностей (цензура, логирование)
         result = self.handler_chain.handle(text, chat_id, user_id)
         if result:
             return result
