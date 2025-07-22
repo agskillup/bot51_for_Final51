@@ -108,6 +108,28 @@ class UserService:
         finally:
             conn.close()
 
+    # получаем ID всех пользователей из базы, чтоб def `broadcast_to_all_users`
+    # в файле `notification_service.py` заработала
+    def get_all_user_ids(self) -> list[int]:
+        """
+        Получает список ID всех пользователей из базы данных.
+        :return: Список, содержащий ID всех пользователей.
+        """
+        conn = self._get_connection()
+        user_ids = []
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT user_id FROM users")
+            # fetchall() вернет список кортежей, например [(123,), (456,)]
+            results = cursor.fetchall()
+            # Преобразуем этот список в простой список чисел
+            user_ids = [item[0] for item in results]
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при получении списка всех пользователей: {e}")
+        finally:
+            conn.close()
+        return user_ids
+
 
 # Пример использования
 if __name__ == "__main__":
