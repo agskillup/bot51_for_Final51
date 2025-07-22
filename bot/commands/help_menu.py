@@ -3,11 +3,13 @@
 # import inspect
 # from bot.base import BotCommand, CommandStrategy
 # Импортируем базовый класс, чтобы можно было достать описание
+from typing import Optional
+
 from bot.base import BotCommand, CommandStrategy
 
 
 class HelpMenuStrategy(CommandStrategy):
-    def handle(self, text, chat_id, user_id):
+    def handle(self, text: str, chat_id: int, user_id: int, **kwargs) -> Optional[str]:
         # Импортируем нашу фабрику сюда.
         # Причина: 'factories.py' импортирует `HelpMenuCommand` из `help_menu.py`
         # и `help_menu.py` импортирует `CommandFactory` из `factories.py` одновременно,
@@ -17,7 +19,7 @@ class HelpMenuStrategy(CommandStrategy):
         help_text = "Здравствуйте! Я бот. Доступные команды:\n"
 
         # Получаем словарь { 'имя_команды': КлассКоманды } из фабрики
-        commands_map = CommandFactory.commands_map
+        commands_map = CommandFactory.command_map
 
         # Сортируем команды по имени для красивого вывода
         for command_name in sorted(commands_map.keys()):
@@ -63,5 +65,5 @@ class HelpMenuCommand(BotCommand):
     def __init__(self):
         self.strategy = HelpMenuStrategy()
 
-    def execute(self, text, chat_id, user_id):
+    def execute(self, text: str, chat_id: int, user_id: int, **kwargs) -> Optional[str]:
         return self.strategy.handle(text, chat_id, user_id)
