@@ -8,9 +8,6 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения из .env файла
 load_dotenv()
 
-# Администратор
-ADMIN_ID = os.getenv("ADMIN_ID", "")
-
 class ConfigError(Exception):
     """Специальный класс исключения для ошибок конфигурации."""
     pass
@@ -29,6 +26,9 @@ class Config:
 
     # База данных (если потребуется)
     DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+    # Администратор
+    ADMIN_ID = int(os.getenv("ADMIN_ID", ""))
 
 # Экземпляр конфигурации
 config = Config()
